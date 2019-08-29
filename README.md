@@ -1,6 +1,6 @@
 # sandbox-lab
 Sample HA k8s cluster:
-
+```bash
 aws s3api create-bucket \
     --bucket sandbox-mnet-dev-state-store \
     --region ca-central-1 \
@@ -76,3 +76,4 @@ kubectl get nodes
 kops validate cluster
 
 kubectl -n kube-system get po
+```
