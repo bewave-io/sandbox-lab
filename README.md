@@ -2,47 +2,27 @@
 Sample HA k8s cluster:
 ```bash
 aws s3api create-bucket \
-    --bucket sandbox-mnet-dev-state-store \
+    --bucket sandbox-tools-mnet-dev-state-store \
     --region ca-central-1 \
     --create-bucket-configuration LocationConstraint=ca-central-1
 
 
 //Versionning to allow for restore
-aws s3api put-bucket-versioning --bucket sandbox-mnet-dev-state-store --versioning-configuration Status=Enabled
+aws s3api put-bucket-versioning --bucket sandbox-tools-mnet-dev-state-store --versioning-configuration Status=Enabled
 
 
 //Set encryption
-aws s3api put-bucket-encryption --bucket sandbox-mnet-dev-state-store --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+aws s3api put-bucket-encryption --bucket sandbox-tools-mnet-dev-state-store --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 
 
 //Create the store
 
 //Prep ENV
-export NAME=sandbox.k8s.local
-export KOPS_STATE_STORE=s3://sandbox-mnet-dev-state-store
+export NAME=sandbox-tools.k8s.local
+export KOPS_STATE_STORE=s3://sandbox-tools-mnet-dev-state-store
 
 //Check zones:
 aws ec2 describe-availability-zones --region ca-central-1
-
-{
-    "AvailabilityZones": [
-        {
-            "State": "available",
-            "Messages": [],
-            "RegionName": "ca-central-1",
-            "ZoneName": "ca-central-1a",
-            "ZoneId": "cac1-az1"
-        },
-        {
-            "State": "available",
-            "Messages": [],
-            "RegionName": "ca-central-1",
-            "ZoneName": "ca-central-1b",
-            "ZoneId": "cac1-az2"
-        }
-    ]
-}
-
 
 //Create cluster configuration
 kops create cluster $NAME \
@@ -50,9 +30,10 @@ kops create cluster $NAME \
     --node-count 3 \
     --zones ca-central-1a,ca-central-1b \
     --master-zones ca-central-1a \
-    --node-size c5.large \
-    --node-volume-size 256 \
-    --master-size c5.large \
+    --node-size m5a.large \
+    --node-volume-size 64 \
+    --master-size t3a.large \
+    --master-volume-size 64 \
     --api-loadbalancer-type internal \
     --topology private \
     --networking calico \
@@ -61,6 +42,32 @@ kops create cluster $NAME \
     --vpc vpc-665f310e \
     --dry-run \
     -o yaml > $NAME.yaml
+
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: sandbox-tools.k8s.local
+  name: stores
+spec:
+  image: kope.io/k8s-1.12-debian-stretch-amd64-hvm-ebs-2019-06-21
+  machineType: m5a.large
+  maxSize: 3
+  minSize: 3
+  nodeLabels:
+    kops.k8s.io/instancegroup: stores
+  role: Node
+  rootVolumeSize: 64
+  subnets:
+  - ca-central-1a
+  - ca-central-1b
+
+
+
 
 kops create -f $NAME.yaml
 kops create secret --name $NAME sshpublickey admin -i ~/.ssh/rsa_id.pub
