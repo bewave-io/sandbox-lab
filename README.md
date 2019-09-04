@@ -147,5 +147,10 @@ helm install \
   --version v0.9.1 \
   jetstack/cert-manager
 
+#Remove with
+helm del --purge cert-manager
+
+#Validate with
+kubectl get pods --namespace cert-manager
 
 ```
