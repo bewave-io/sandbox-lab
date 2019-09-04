@@ -71,11 +71,10 @@ spec:
 
 kops create -f $NAME.yaml
 kops create secret --name $NAME sshpublickey admin -i ~/.ssh/rsa_id.pub
-kops update cluster $NAME --yes
-kops rolling-update cluster $NAME --yes
 
 //Build the cluster
-kops update cluster ${NAME} --yes
+kops update cluster $NAME --yes
+kops rolling-update cluster $NAME --yes
 
 //Validate cluster
 kubectl get nodes
@@ -83,4 +82,70 @@ kubectl get nodes
 kops validate cluster
 
 kubectl -n kube-system get po
+
+//Install Tiller/Helm
+https://helm.sh/docs/using_helm/
+$ curl -LO https://git.io/get_helm.sh
+$ chmod 700 get_helm.sh
+$ ./get_helm.sh
+
+kubectl -n kube-system create serviceaccount tiller
+kubectl create clusterrolebinding tiller \
+  --clusterrole=cluster-admin \
+  --serviceaccount=kube-system:tiller
+  
+helm init --service-account tiller --history-max 200
+//Test tiller install
+kubectl -n kube-system  rollout status deploy/tiller-deploy
+
+helm version
+
+
+# Install the CustomResourceDefinition resources separately
+kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/00-crds.yaml
+
+# Create the namespace for cert-manager
+kubectl create namespace cert-manager
+
+# Label the cert-manager namespace to disable resource validation
+kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+
+# Add the Jetstack Helm repository
+helm repo add jetstack https://charts.jetstack.io
+
+# Update your local Helm chart repository cache
+helm repo update
+
+{"nodeAffinity": {"preferredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "kops.k8s.io/instancegroup","operator": "In","values": ["workloads"]}]}]}}}
+
+
+affinity:
+nodeAffinity:
+requiredDuringSchedulingIgnoredDuringExecution:
+nodeSelectorTerms:
+- matchExpressions:
+- key: kops.k8s.io/instancegroup
+operator: In
+values:
+- workloads
+
+requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - kafka
+#       topologyKey: "kubernetes.io/hostname"
+
+
+# Install the cert-manager Helm chart
+helm install \
+  -f certman-values.yaml \
+  --name cert-manager \
+  --namespace cert-manager \
+  --version v0.9.1 \
+  jetstack/cert-manager
+
+
 ```
