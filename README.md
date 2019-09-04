@@ -122,7 +122,7 @@ helm install stable/nginx-ingress --name main-loadbalancer -f affinity-values.ya
 # Install the cert-manager Helm chart
 # Sample values: https://github.com/jetstack/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml
 helm install \
-  -f certman-values.yaml \
+  -f affinity-values.yaml \
   --name cert-manager \
   --namespace cert-manager \
   --version v0.9.1 \
