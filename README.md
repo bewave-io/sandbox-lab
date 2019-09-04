@@ -7,24 +7,24 @@ aws s3api create-bucket \
     --create-bucket-configuration LocationConstraint=ca-central-1
 
 
-//Versionning to allow for restore
+# Versionning to allow for restore
 aws s3api put-bucket-versioning --bucket sandbox-tools-mnet-dev-state-store --versioning-configuration Status=Enabled
 
 
-//Set encryption
+# Set encryption
 aws s3api put-bucket-encryption --bucket sandbox-tools-mnet-dev-state-store --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
 
 
-//Create the store
+# Create the store
 
-//Prep ENV
+# Prep ENV
 export NAME=sandbox-tools.k8s.local
 export KOPS_STATE_STORE=s3://sandbox-tools-mnet-dev-state-store
 
-//Check zones:
+# Check zones:
 aws ec2 describe-availability-zones --region ca-central-1
 
-//Create cluster configuration
+# Create cluster configuration
 kops create cluster $NAME \
     --master-count 3 \
     --node-count 3 \
@@ -72,18 +72,18 @@ spec:
 kops create -f $NAME.yaml
 kops create secret --name $NAME sshpublickey admin -i ~/.ssh/rsa_id.pub
 
-//Build the cluster
+# Build the cluster
 kops update cluster $NAME --yes
 kops rolling-update cluster $NAME --yes
 
-//Validate cluster
+# Validate cluster
 kubectl get nodes
 
 kops validate cluster
 
 kubectl -n kube-system get po
 
-//Install Tiller/Helm
+# Install Tiller/Helm
 https://helm.sh/docs/using_helm/
 $ curl -LO https://git.io/get_helm.sh
 $ chmod 700 get_helm.sh
@@ -95,7 +95,7 @@ kubectl create clusterrolebinding tiller \
   --serviceaccount=kube-system:tiller
   
 helm init --service-account tiller --history-max 200
-//Test tiller install
+# Test tiller install
 kubectl -n kube-system  rollout status deploy/tiller-deploy
 
 helm version
