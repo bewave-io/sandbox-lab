@@ -135,6 +135,22 @@ helm del --purge cert-manager
 #Validate with
 kubectl get pods --namespace cert-manager
 
+---
+Creating issuers:
+
+- Staging:
+    kubectl apply -f staging-issuer.yaml
+  
+- Production:
+    kubectl apply -f production-issuer.yaml
+  
+---
+Create ingress 
+
+    kubectl apply -f ingress.yaml
+
+
+
 
 
 ```
