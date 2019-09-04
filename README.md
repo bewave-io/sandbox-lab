@@ -140,6 +140,7 @@ requiredDuringSchedulingIgnoredDuringExecution:
 
 
 # Install the cert-manager Helm chart
+# Sample values: https://github.com/jetstack/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml
 helm install \
   -f certman-values.yaml \
   --name cert-manager \
