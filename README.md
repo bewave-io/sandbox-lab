@@ -116,28 +116,8 @@ helm repo add jetstack https://charts.jetstack.io
 # Update your local Helm chart repository cache
 helm repo update
 
-{"nodeAffinity": {"preferredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "kops.k8s.io/instancegroup","operator": "In","values": ["workloads"]}]}]}}}
-
-
-affinity:
-nodeAffinity:
-requiredDuringSchedulingIgnoredDuringExecution:
-nodeSelectorTerms:
-- matchExpressions:
-- key: kops.k8s.io/instancegroup
-operator: In
-values:
-- workloads
-
-requiredDuringSchedulingIgnoredDuringExecution:
-#     - labelSelector:
-#         matchExpressions:
-#         - key: app
-#           operator: In
-#           values:
-#           - kafka
-#       topologyKey: "kubernetes.io/hostname"
-
+# Install Loadbalancer and NginxIngress
+helm install stable/nginx-ingress --name main-loadbalancer -f affinity-values.yaml --set rbac.create=true
 
 # Install the cert-manager Helm chart
 # Sample values: https://github.com/jetstack/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml
@@ -153,5 +133,7 @@ helm del --purge cert-manager
 
 #Validate with
 kubectl get pods --namespace cert-manager
+
+
 
 ```
