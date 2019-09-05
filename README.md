@@ -168,7 +168,7 @@ systemctl enable open-iscsi
 echo "== preparing iscsi for bewave DONE=="
 reboot
 
-
+# Validate node log in /var/log/cloud-init-output.log
 
 
 ```
