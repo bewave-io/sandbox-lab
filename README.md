@@ -170,5 +170,45 @@ reboot
 
 # Validate node log in /var/log/cloud-init-output.log
 
+apiVersion: openebs.io/v1alpha1
+kind: StoragePool
+metadata:
+  name: datastore
+  type: hostdir 
+spec:
+  path: "/mnt/openebs_xfs"
+
+apiVersion: openebs.io/v1alpha1
+kind: StoragePool
+metadata:
+  name: default
+  type: hostdir
+spec:
+  path: "/mnt/openebs_xvdd"
+
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    cas.openebs.io/config: |
+      - name: ReplicaNodeSelector
+        value: |-
+          kops.k8s.io/instancegroup: stores
+      - name: ReplicaCount
+        value: "3"
+      - name: StoragePool
+        value: default
+    openebs.io/cas-type: jiva
+  name: openebs-jiva-datastore  
+provisioner: openebs.io/provisioner-iscsi
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+
+kubectl -n openebs exec -it openebs-apiserver /usr/local/bin/mayactl volume list
+mayactl volume describe --volname pvc-wrwtrqwrt -n elasticsearch
+
+
+openebs "executable file not found in $PATH" means, the node doesnt have iscsi
 
 ```
