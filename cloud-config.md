@@ -1,3 +1,4 @@
+```bash
 echo "== preparing iscsi for bewave=="
 set -x
 date
@@ -12,3 +13,4 @@ apt-get -y install open-iscsi
 systemctl enable open-iscsi
 echo "== preparing iscsi for bewave DONE=="
 reboot
+```
